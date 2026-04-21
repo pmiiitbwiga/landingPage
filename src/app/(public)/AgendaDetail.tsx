@@ -216,7 +216,7 @@ ${window.location.href}`;
         schemaMarkup={schemaMarkup}
       />
       {/* Hero Section */}
-      <section className="relative h-[35vh] min-h-[350px] bg-primary overflow-hidden">
+      <section className="relative min-h-[350px] py-16 md:py-0 md:h-[40vh] bg-primary overflow-hidden">
         <div className="absolute inset-0 h-full w-full bg-primary object-cover opacity-20 mix-blend-overlay" />
         <div className="container relative z-10 mx-auto px-4 h-full flex flex-col justify-center lg:px-8">
             <div className="max-w-4xl space-y-8">
