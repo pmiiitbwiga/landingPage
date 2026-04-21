@@ -39,9 +39,6 @@ export function Navbar() {
             <span className="hidden text-lg font-extrabold tracking-tight md:block">
               PK PMII ITB WIGA
             </span>
-            <span className="text-base font-extrabold md:hidden">
-              WIGA
-            </span>
           </Link>
 
           {/* Desktop Nav */}

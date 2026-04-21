@@ -45,7 +45,7 @@ export default function App() {
 
             {/* Public Pages */}
             <Route path="/tentang" element={<TentangPage />} />
-            <Route path="/berita" element={<ContentListPage type="Berita" title="Berita Pergerakan" />} />
+            <Route path="/berita" element={<ContentListPage type="Berita" title="Warta Pergerakan" />} />
             <Route path="/artikel" element={<ContentListPage type="Artikel" title="Goresan Tinta" />} />
             <Route path="/opini" element={<ContentListPage type="Opini" title="Opini & Gagasan" />} />
             <Route path="/agenda" element={<AgendaListPage />} />
