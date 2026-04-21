@@ -5,6 +5,7 @@ import { Post, Category } from '@/src/types';
 import { PostCard } from '@/src/components/cards/PostCard';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import { cn } from '@/src/lib/utils';
+import { SEO } from '@/src/components/SEO';
 
 interface ContentListPageProps {
   type: Category;
@@ -31,6 +32,10 @@ export function ContentListPage({ type, title }: ContentListPageProps) {
 
   return (
     <div className="bg-surface min-h-screen py-10">
+      <SEO 
+        title={title} 
+        description={`Kumpulan ${title.toLowerCase()} terbaru seputar kegiatan dan isu terkini dari PMII ITB WIGA Lumajang.`} 
+      />
       <div className="container mx-auto px-4 lg:px-8">
         <header className="mb-8 border-b border-line pb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="flex items-center gap-3 border-l-4 border-accent pl-4">

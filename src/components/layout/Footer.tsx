@@ -37,7 +37,7 @@ export function Footer() {
       <div className="flex gap-4">
         <a href="#" className="hover:text-primary transition-colors">Privasi</a>
         <a href="#" className="hover:text-primary transition-colors">Ketentuan</a>
-        <span className="opacity-50">Powered by Next.js & AI Studio</span>
+        <span className="opacity-50">Powered by React & Vercel</span>
       </div>
     </footer>
   );

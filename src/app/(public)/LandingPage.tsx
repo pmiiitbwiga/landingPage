@@ -6,10 +6,15 @@ import { Button } from '@/src/components/ui/Button';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { SEO } from '@/src/components/SEO';
 
 export function LandingPage() {
   return (
     <div className="bg-surface">
+      <SEO 
+        title="Beranda" 
+        description="Selamat datang di Portal Resmi PMII ITB WIGA Lumajang. Temukan berita terbaru, agenda kegiatan, dan pendaftaran anggota." 
+      />
       <div className="container mx-auto px-4 py-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Main Content Area */}

@@ -168,8 +168,8 @@ export function AuthPage() {
           
           <div className="relative z-10">
             <Link to="/" className="inline-flex items-center gap-2 mb-12">
-              <div className="bg-accent p-2 rounded-lg">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Logo_PMII.png/600px-Logo_PMII.png" className="h-6 w-auto" alt="Logo" />
+              <div className="bg-white p-2 rounded-lg">
+                <img src="/logo.svg" className="h-8 w-auto" alt="Logo" />
               </div>
               <span className="font-black text-xl tracking-tighter">PMII WIGA</span>
             </Link>

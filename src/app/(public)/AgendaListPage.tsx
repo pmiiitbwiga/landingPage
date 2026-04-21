@@ -5,6 +5,7 @@ import { Agenda } from '@/src/types';
 import { AgendaCard } from '@/src/components/cards/AgendaCard';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import { Calendar } from 'lucide-react';
+import { SEO } from '@/src/components/SEO';
 
 export function AgendaListPage() {
   const { searchQuery } = useSearch();
@@ -21,6 +22,10 @@ export function AgendaListPage() {
 
   return (
     <div className="bg-surface min-h-screen py-10">
+      <SEO 
+        title="Agenda Kegiatan" 
+        description="Jadwal lengkap kegiatan, diskusi, silaturahmi, dan pelatihan yang diselenggarakan oleh PMII ITB WIGA Lumajang." 
+      />
       <div className="container mx-auto px-4 lg:px-8">
         <header className="mb-8 border-b border-line pb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="flex items-center gap-3 border-l-4 border-accent pl-4">

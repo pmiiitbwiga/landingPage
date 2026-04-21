@@ -8,6 +8,7 @@ import { Calendar, MapPin, User, ArrowLeft, Ticket, Clock, Info, CheckCircle, Al
 import { Button } from '@/src/components/ui/Button';
 import { Badge } from '@/src/components/ui/Badge';
 import { useAuth } from '@/src/lib/AuthContext';
+import { SEO } from '@/src/components/SEO';
 
 export function AgendaDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -177,8 +178,43 @@ ${window.location.href}`;
     }
   };
 
+  const schemaMarkup = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": agenda.title,
+    "startDate": agenda.date,
+    "endDate": agenda.endDate || agenda.date,
+    "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+    "eventStatus": "https://schema.org/EventScheduled",
+    "location": {
+      "@type": "Place",
+      "name": agenda.location,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Lumajang",
+        "addressRegion": "Jawa Timur",
+        "addressCountry": "ID"
+      }
+    },
+    "image": [
+      agenda.logoUrl !== '-' ? agenda.logoUrl : "https://pmii-wiga.vercel.app/og-image.jpg"
+    ],
+    "description": agenda.content.substring(0, 500),
+    "organizer": {
+      "@type": "Organization",
+      "name": "PMII ITB WIGA Lumajang",
+      "url": "https://pmii-wiga.vercel.app"
+    }
+  };
+
   return (
     <div className="bg-white">
+      <SEO 
+        title={agenda.title} 
+        description={agenda.content.substring(0, 150) + '...'}
+        image={agenda.logoUrl !== '-' ? agenda.logoUrl : undefined}
+        schemaMarkup={schemaMarkup}
+      />
       {/* Hero Section */}
       <section className="relative h-[35vh] min-h-[350px] bg-primary overflow-hidden">
         <div className="absolute inset-0 h-full w-full bg-primary object-cover opacity-20 mix-blend-overlay" />

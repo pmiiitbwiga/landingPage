@@ -35,9 +35,7 @@ export function Navbar() {
         <div className="flex h-full items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="h-8 w-8 flex-shrink-0 rounded bg-accent p-1.5 flex items-center justify-center">
-                <span className="text-primary font-extrabold text-[10px]">PMII</span>
-            </div>
+             <img src="/logo.svg" alt="Logo PMII" className="h-9 w-9 object-contain" />
             <span className="hidden text-lg font-extrabold tracking-tight md:block">
               PK PMII ITB WIGA
             </span>

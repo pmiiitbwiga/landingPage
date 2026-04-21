@@ -7,6 +7,7 @@ import { Badge } from '@/src/components/ui/Badge';
 import { formatDate } from '@/src/lib/utils';
 import { Calendar, User, ArrowLeft, Share2, Facebook, Twitter, Instagram } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { SEO } from '@/src/components/SEO';
 
 export function ContentDetail({ type }: { type: 'berita' | 'artikel' | 'opini' }) {
   const { slug } = useParams<{ slug: string }>();
@@ -52,8 +53,37 @@ export function ContentDetail({ type }: { type: 'berita' | 'artikel' | 'opini' }
     );
   }
 
+  const schemaMarkup = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "image": [
+      post.featuredImage
+    ],
+    "datePublished": post.createdAt,
+    "dateModified": post.createdAt,
+    "author": [{
+      "@type": "Person",
+      "name": post.author,
+    }],
+    "publisher": {
+      "@type": "Organization",
+      "name": "PMII ITB WIGA Lumajang",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://pmii-wiga.vercel.app/logo.png"
+      }
+    }
+  };
+
   return (
     <div className="bg-white">
+      <SEO 
+        title={post.title} 
+        description={post.content.substring(0, 150) + '...'}
+        image={post.featuredImage}
+        schemaMarkup={schemaMarkup}
+      />
       {/* Article Header */}
       <header className="container mx-auto px-4 pt-16 lg:px-8">
         <div className="max-w-4xl mx-auto space-y-6">
