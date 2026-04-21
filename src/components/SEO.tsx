@@ -12,9 +12,9 @@ interface SEOProps {
 
 export const SEO: React.FC<SEOProps> = ({ 
   title = 'Sistem Informasi PMII ITB WIGA', 
-  description = 'Portal resmi Pimpinan Komisariat Pergerakan Mahasiswa Islam Indonesia (PMII) Institut Teknologi dan Bisnis Widya Gama Lumajang. Temukan informasi pendaftaran, kegiatan, dan profil organisasi kami.',
+  description = 'Portal resmi Komisariat Pergerakan Mahasiswa Islam Indonesia (PMII) Institut Teknologi dan Bisnis Widya Gama Lumajang. Temukan informasi pendaftaran, kegiatan, dan profil organisasi kami.',
   type = 'website',
-  image = '/og-image.jpg',
+  image = '/logo.svg',
   url = window.location.href,
   schemaMarkup
 }) => {

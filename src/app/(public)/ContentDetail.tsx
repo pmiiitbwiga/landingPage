@@ -53,6 +53,8 @@ export function ContentDetail({ type }: { type: 'berita' | 'artikel' | 'opini' }
     );
   }
 
+  const cleanDescription = post.excerpt || post.content.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
+
   const schemaMarkup = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -80,7 +82,7 @@ export function ContentDetail({ type }: { type: 'berita' | 'artikel' | 'opini' }
     <div className="bg-white">
       <SEO 
         title={post.title} 
-        description={post.content.substring(0, 150) + '...'}
+        description={cleanDescription}
         image={post.featuredImage}
         schemaMarkup={schemaMarkup}
       />

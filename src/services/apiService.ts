@@ -1,8 +1,14 @@
 import { Post, Agenda, Member, Participation } from '../types';
 
 export async function fetchFromSheet<T>(action: string, params: Record<string, string> = {}): Promise<T> {
-  const queryParams = new URLSearchParams({ action, ...params });
-  const response = await fetch(`/api/sheet?${queryParams.toString()}`);
+  const queryParams = new URLSearchParams({ action, t: Date.now().toString(), ...params });
+  const response = await fetch(`/api/sheet?${queryParams.toString()}`, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
+    }
+  });
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

@@ -211,7 +211,7 @@ ${window.location.href}`;
     <div className="bg-white">
       <SEO 
         title={agenda.title} 
-        description={agenda.content.substring(0, 150) + '...'}
+        description={agenda.content.replace(/<[^>]*>?/gm, '').substring(0, 150) + '...'}
         image={agenda.logoUrl !== '-' ? agenda.logoUrl : undefined}
         schemaMarkup={schemaMarkup}
       />

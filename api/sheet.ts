@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Disable caching entirely
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, s-maxage=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   const method = req.method as 'GET' | 'POST';
   
   if (method !== 'GET' && method !== 'POST') {
