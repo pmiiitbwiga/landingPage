@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1E40AF;
+  --color-accent: #FACC15;
+  --color-surface: #F8FAFC;
+  --color-ink: #1F2937;
+  --color-muted: #6B7280;
+  --color-line: #E2E8F0;
+  
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-ink antialiased text-sm;
+  }
+}
+
+.tiptap-content p {
+  @apply mb-4;
+}
+
+.tiptap-content ul {
+  @apply list-disc list-inside mb-4;
+}
+
+.tiptap-content ol {
+  @apply list-decimal list-inside mb-4;
+}
+
+.tiptap-content blockquote {
+  @apply border-l-4 border-accent pl-4 italic my-6 text-muted;
+}
+
+.tiptap-content h1 {
+  @apply text-3xl font-bold mb-4 mt-8;
+}
+
+.tiptap-content h2 {
+  @apply text-2xl font-bold mb-3 mt-6;
+}
+
+.tiptap-content img {
+  @apply rounded-xl max-w-full h-auto my-6 shadow-md;
+}
+
+.tiptap-content a {
+  @apply text-primary underline;
+}
+
+/* Tiptap Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}

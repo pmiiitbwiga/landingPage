@@ -1,0 +1,32 @@
+import { Post, Agenda, Member, Participation } from '../types';
+
+export async function fetchFromSheet<T>(action: string, params: Record<string, string> = {}): Promise<T> {
+  const queryParams = new URLSearchParams({ action, ...params });
+  const response = await fetch(`/api/sheet?${queryParams.toString()}`);
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || 'Gagal mengambil data dari server.');
+  }
+  
+  return response.json();
+}
+
+export async function postToSheet<T>(action: string, data: any): Promise<T> {
+  const response = await fetch('/api/sheet', {
+    method: 'POST',
+    body: JSON.stringify({ action, data }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const error = new Error(errorData.error || errorData.message || 'Gagal mengirim data ke server.');
+    (error as any).details = errorData.hint || errorData.details;
+    throw error;
+  }
+
+  return response.json();
+}
