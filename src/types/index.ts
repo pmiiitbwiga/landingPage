@@ -31,7 +31,7 @@ export interface Member {
   jenisKelamin: string;
   tempatLahir: string;
   tanggalLahir: string;
-  Alamat: string;
+  alamat: string;
   whatsapp: string;
   komisariat: string;
   statusKaderisasi: string;

@@ -270,8 +270,13 @@ function handleLogin(data) {
   var eIdx = headers.indexOf("email");
   var pIdx = headers.indexOf("password");
   
+  var passwordInput = String(data.password);
+  var hashedInput = hashPassword(passwordInput);
+
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][eIdx]) === String(data.email) && String(values[i][pIdx]) === String(data.password)) {
+    var storedPassword = String(values[i][pIdx]);
+    // Mewajibkan penggunaan Hash, menonaktifkan pengecekan plaintext asli
+    if (String(values[i][eIdx]) === String(data.email) && storedPassword === hashedInput) {
       var user = {};
       headers.forEach(function(h, j) {
         user[h] = values[i][j];
@@ -283,7 +288,7 @@ function handleLogin(data) {
 }
 
 function handleRegister(data) {
-  var headers = ["uid", "name", "nim", "email", "jenisKelamin", "tempatLahir", "tanggalLahir", "Alamat", "whatsapp", "komisariat", "statusKaderisasi", "role", "accountStatus", "password", "photoUrl", "createdAt", "lastLogin"];
+  var headers = ["uid", "name", "nim", "email", "jenisKelamin", "tempatLahir", "tanggalLahir", "alamat", "whatsapp", "komisariat", "statusKaderisasi", "role", "accountStatus", "password", "photoUrl", "createdAt", "lastLogin"];
   var sheet = getOrCreateSheet("users", headers);
   var photoUrl = "";
   if (data.photoBase64) photoUrl = saveToDrive(data.photoBase64, CONFIG.FOLDER_ID_PROFIL, "PROFIL_" + data.nim);
@@ -296,8 +301,8 @@ function handleRegister(data) {
     jenisKelamin: data.jenisKelamin || "-",
     tempatLahir: data.tempatLahir || "-",
     tanggalLahir: data.tanggalLahir || "-",
-    Alamat: data.Alamat || "-",
-    password: data.password,
+    alamat: data.alamat || data.Alamat || "-",
+    password: hashPassword(String(data.password)),
     whatsapp: data.whatsapp,
     komisariat: data.komisariat,
     statusKaderisasi: data.statusKaderisasi || "CALON",
@@ -365,4 +370,21 @@ function writeRowByHeader(sheet, itemObj) {
     if (idx > -1) rowData[idx] = itemObj[key];
   }
   sheet.appendRow(rowData);
+}
+
+// Hash String menjadi format aman (SHA-256)
+function hashPassword(plainText) {
+  var rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, plainText, Utilities.Charset.UTF_8);
+  var txtHash = '';
+  for (var i = 0; i < rawHash.length; i++) {
+    var hashVal = rawHash[i];
+    if (hashVal < 0) {
+      hashVal += 256;
+    }
+    if (hashVal.toString(16).length == 1) {
+      txtHash += '0';
+    }
+    txtHash += hashVal.toString(16);
+  }
+  return txtHash;
 }

@@ -19,6 +19,8 @@ import { postToSheet } from '@/src/services/apiService';
 import { getAgendas, getFormFields, addFormField, createAgenda, updateAgenda, deleteAgenda, getParticipations } from '@/src/services/agendaService';
 import { getMembers, createMember, updateMember, deleteMember } from '@/src/services/memberService';
 
+import { toast } from 'sonner';
+
 export function AdminDashboard() {
   const { user, logout, login } = useAuth();
   const navigate = useNavigate();
@@ -85,7 +87,7 @@ export function AdminDashboard() {
     jenisKelamin: 'Laki-laki',
     tempatLahir: '',
     tanggalLahir: '',
-    Alamat: '',
+    alamat: '',
     whatsapp: '',
     komisariat: '',
     statusKaderisasi: 'CALON',
@@ -175,7 +177,7 @@ export function AdminDashboard() {
       });
 
       if (result.success) {
-        alert('BERHASIL! Konten Sahabat telah diajukan dan sedang menunggu moderasi Admin.');
+        toast.success('BERHASIL! Konten Sahabat telah diajukan dan sedang menunggu moderasi Admin.');
         setPostTitle('');
         setPostContent('');
         setPostImage(null);
@@ -198,12 +200,12 @@ export function AdminDashboard() {
       if (res.success) {
         const updatedUser = { ...user, ...profileForm };
         login(updatedUser);
-        alert('Profil Berhasil Diperbarui!');
+        toast.success('Profil Berhasil Diperbarui!');
       } else {
-        alert('Gagal memperbarui profil: ' + res.message);
+        toast.error('Gagal memperbarui profil: ' + res.message);
       }
     } catch (err) {
-      alert('Terjadi kesalahan saat memperbarui profil.');
+      toast.error('Terjadi kesalahan saat memperbarui profil.');
     } finally {
       setLoading(false);
     }
@@ -250,14 +252,14 @@ export function AdminDashboard() {
         : await createAgenda(payload);
 
       if (res.success) {
-        alert(editingAgendaId ? 'Agenda berhasil diperbarui!' : 'Agenda berhasil dibuat!');
+        toast.success(editingAgendaId ? 'Agenda berhasil diperbarui!' : 'Agenda berhasil dibuat!');
         setShowAgendaModal(false);
         setEditingAgendaId(null);
         setAgendaForm({ title: '', date: '', endDate: '', time: '', location: '', content: '', quota: '', facilities: '', requirements: '', logoBase64: '', customFields: [], contactPerson: '' });
         loadAgendas();
       }
     } catch (err) {
-      alert('Gagal menyimpan agenda.');
+      toast.error('Gagal menyimpan agenda.');
     } finally {
       setLoading(false);
     }
@@ -270,11 +272,12 @@ export function AdminDashboard() {
       const res = await deleteAgenda(id);
       if (res.success) {
         loadAgendas();
+        toast.success('Agenda berhasil dihapus!');
       } else {
-        alert(res.message || 'Gagal menghapus agenda.');
+        toast.error(res.message || 'Gagal menghapus agenda.');
       }
     } catch (err) {
-      alert('Gagal menghapus agenda.');
+      toast.error('Gagal menghapus agenda.');
     } finally {
       setLoading(false);
     }
@@ -315,7 +318,7 @@ export function AdminDashboard() {
         : await createMember(memberForm);
 
       if (res.success) {
-        alert(editingMemberUid ? 'Data kader diperbarui!' : 'Kader baru berhasil ditambah!');
+        toast.success(editingMemberUid ? 'Data kader diperbarui!' : 'Kader baru berhasil ditambah!');
         setShowMemberModal(false);
         setEditingMemberUid(null);
         setMemberForm({ 
@@ -334,10 +337,10 @@ export function AdminDashboard() {
         });
         loadMembers();
       } else {
-        alert(res.message || 'Gagal menyimpan data kader.');
+        toast.error(res.message || 'Gagal menyimpan data kader.');
       }
     } catch (err) {
-      alert('Terjadi kesalahan.');
+      toast.error('Terjadi kesalahan.');
     } finally {
       setLoading(false);
     }
@@ -350,9 +353,10 @@ export function AdminDashboard() {
       const res = await deleteMember(uid);
       if (res.success) {
         loadMembers();
+        toast.success('Kader berhasil dihapus!');
       }
     } catch (err) {
-      alert('Gagal menghapus kader.');
+      toast.error('Gagal menghapus kader.');
     } finally {
       setLoading(false);
     }
@@ -367,7 +371,7 @@ export function AdminDashboard() {
       jenisKelamin: m.jenisKelamin || 'Laki-laki',
       tempatLahir: m.tempatLahir || '',
       tanggalLahir: m.tanggalLahir ? m.tanggalLahir.substring(0, 10) : '',
-      Alamat: m.Alamat || '',
+      alamat: m.alamat || '',
       whatsapp: m.whatsapp,
       komisariat: m.komisariat,
       statusKaderisasi: m.statusKaderisasi,
@@ -413,7 +417,7 @@ export function AdminDashboard() {
           'Jenis Kelamin': m.jenisKelamin,
           'Tempat Lahir': m.tempatLahir,
           'Tanggal Lahir': m.tanggalLahir ? m.tanggalLahir.substring(0, 10) : '',
-          'Alamat': m.Alamat,
+          'Alamat': m.alamat,
           'WhatsApp': m.whatsapp,
           'Komisariat': m.komisariat,
           'Status Kaderisasi': m.statusKaderisasi,
@@ -434,7 +438,7 @@ export function AdminDashboard() {
             'Jenis Kelamin': member?.jenisKelamin || '',
             'Tempat Lahir': member?.tempatLahir || '',
             'Tanggal Lahir': member?.tanggalLahir || '',
-            'Alamat': member?.Alamat || '',
+            'Alamat': member?.alamat || '',
             'WhatsApp': member?.whatsapp || '',
             'Komisariat': member?.komisariat || '',
             'Foto Peserta': member?.photoUrl || '',
@@ -500,7 +504,7 @@ export function AdminDashboard() {
       saveAs(new Blob([buffer]), finalFileName);
     } catch (err) {
       console.error("Export Error:", err);
-      alert("Gagal mengekspor data ke Excel.");
+      toast.error("Gagal mengekspor data ke Excel.");
     } finally {
       setLoading(false);
     }
@@ -526,7 +530,7 @@ export function AdminDashboard() {
         setNewField({ label: '', type: 'text', options: '', isRequired: true });
       }
     } catch (err) {
-      alert('Gagal menambah field.');
+      toast.error('Gagal menambah field.');
     } finally {
       setLoading(false);
     }
@@ -551,7 +555,7 @@ export function AdminDashboard() {
     const agenda = agendas.find(a => a.id === agendaId);
     const filtered = participations.filter(p => p.agendaId === agendaId);
     if (filtered.length === 0) {
-      alert('Belum ada pendaftar untuk agenda ini.');
+      toast.info('Belum ada pendaftar untuk agenda ini.');
       return;
     }
     
@@ -564,9 +568,9 @@ export function AdminDashboard() {
       setLoading(true);
       await postToSheet('update_post', { id, status: 'Published' });
       setPendingPosts(prev => prev.filter(p => p.id !== id));
-      alert('Konten berhasil diterbitkan!');
+      toast.success('Konten berhasil diterbitkan!');
     } catch (err) {
-      alert('Gagal menyetujui konten.');
+      toast.error('Gagal menyetujui konten.');
     } finally {
       setLoading(false);
     }
@@ -578,9 +582,9 @@ export function AdminDashboard() {
       setLoading(true);
       await postToSheet('update_post', { id, status: 'Rejected' });
       setPendingPosts(prev => prev.filter(p => p.id !== id));
-      alert('Konten ditolak.');
+      toast.success('Konten ditolak.');
     } catch (err) {
-      alert('Gagal menolak konten.');
+      toast.error('Gagal menolak konten.');
     } finally {
       setLoading(false);
     }
@@ -978,7 +982,7 @@ export function AdminDashboard() {
                            <div className="space-y-1">
                               <label className="text-[10px] font-bold text-muted uppercase">Alamat Lengkap</label>
                               <textarea required rows={2} className="w-full border border-line rounded-lg p-2.5 text-sm outline-none bg-surface/10 focus:bg-white resize-none" 
-                                value={memberForm.Alamat} onChange={e => setMemberForm({...memberForm, Alamat: e.target.value})} />
+                                value={memberForm.alamat} onChange={e => setMemberForm({...memberForm, alamat: e.target.value})} />
                            </div>
 
                            <div className="space-y-1">

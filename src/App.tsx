@@ -15,6 +15,7 @@ import { MemberDashboard } from './app/member/MemberDashboard';
 import { AdminDashboard } from './app/admin/AdminDashboard';
 import { SearchProvider } from './lib/SearchContext';
 import { AuthProvider } from './lib/AuthContext';
+import { Toaster } from 'sonner';
 
 import { AuthPage } from './app/auth/AuthPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -24,6 +25,7 @@ export default function App() {
     <AuthProvider>
       <SearchProvider>
         <BrowserRouter>
+          <Toaster position="top-center" richColors theme="light" />
           <MainLayout>
           <Routes>
             <Route path="/" element={<LandingPage />} />

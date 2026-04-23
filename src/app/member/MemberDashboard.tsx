@@ -14,6 +14,8 @@ import { createPost } from '@/src/services/postService';
 import { getParticipations } from '@/src/services/agendaService';
 import { updateMember } from '@/src/services/memberService';
 
+import { toast } from 'sonner';
+
 export function MemberDashboard() {
   const { user, logout, login } = useAuth();
   const [activeTab, setActiveTab] = React.useState<'overview' | 'profile' | 'content' | 'certificates'>('overview');
@@ -86,7 +88,7 @@ export function MemberDashboard() {
       });
 
       if (result.success) {
-        alert('BERHASIL! Konten Sahabat telah diajukan.');
+        toast.success('BERHASIL! Konten Sahabat telah diajukan.');
         setPostTitle('');
         setPostContent('');
         setPostImage(null);
@@ -107,12 +109,12 @@ export function MemberDashboard() {
       const res = await updateMember(user.uid, profileForm);
       if (res.success) {
         login({ ...user, ...profileForm });
-        alert('Profil Sahabat Berhasil Diperbarui!');
+        toast.success('Profil Sahabat Berhasil Diperbarui!');
       } else {
-        alert('Gagal: ' + res.message);
+        toast.error('Gagal: ' + res.message);
       }
     } catch (err) {
-      alert('Terjadi kesalahan.');
+      toast.error('Terjadi kesalahan.');
     } finally {
       setLoading(false);
     }

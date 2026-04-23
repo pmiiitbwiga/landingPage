@@ -10,6 +10,8 @@ import { Badge } from '@/src/components/ui/Badge';
 import { useAuth } from '@/src/lib/AuthContext';
 import { SEO } from '@/src/components/SEO';
 
+import { toast } from 'sonner';
+
 export function AgendaDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ export function AgendaDetail() {
     jenisKelamin: (user as any)?.jenisKelamin || '',
     tempatLahir: (user as any)?.tempatLahir || '',
     tanggalLahir: (user as any)?.tanggalLahir || '',
-    Alamat: (user as any)?.Alamat || '',
+    alamat: (user as any)?.alamat || (user as any)?.Alamat || '',
     whatsapp: user?.whatsapp || '',
     komisariat: user?.komisariat || ''
   });
@@ -40,7 +42,7 @@ export function AgendaDetail() {
         jenisKelamin: prev.jenisKelamin || (user as any).jenisKelamin,
         tempatLahir: prev.tempatLahir || (user as any).tempatLahir,
         tanggalLahir: prev.tanggalLahir || (user as any).tanggalLahir,
-        Alamat: prev.Alamat || (user as any).Alamat,
+        alamat: prev.alamat || (user as any).alamat || (user as any).Alamat,
         whatsapp: prev.whatsapp || user.whatsapp,
         komisariat: prev.komisariat || user.komisariat
       }));
@@ -130,11 +132,12 @@ export function AgendaDetail() {
 
       if (result.success) {
         setSuccess(true);
+        toast.success("Berhasil Mendaftar Agenda!");
       } else {
-        alert(result.message || 'Terjadi kesalahan saat mendaftar.');
+        toast.error(result.message || 'Terjadi kesalahan saat mendaftar.');
       }
     } catch (err) {
-      alert('Gagal mengirim pendaftaran. Periksa koneksi internet Sahabat.');
+      toast.error('Gagal mengirim pendaftaran. Periksa koneksi internet Sahabat.');
     } finally {
       setSubmitting(false);
     }
@@ -174,7 +177,7 @@ ${window.location.href}`;
       }).catch(console.error);
     } else {
       navigator.clipboard.writeText(`${shareText}`);
-      alert('Teks dan tautan berhasil disalin ke papan klip!');
+      toast.success('Teks dan tautan berhasil disalin ke papan klip!');
     }
   };
 
@@ -473,7 +476,7 @@ ${window.location.href}`;
                                 <div className="space-y-1">
                                   <label className="text-[10px] font-black text-muted uppercase ml-1">Alamat Lengkap</label>
                                   <textarea required rows={2} className="w-full bg-white border border-line rounded-xl px-3 py-2 text-sm font-bold text-ink resize-none" 
-                                    value={formData.Alamat} onChange={e => handleInputChange('Alamat', e.target.value)} />
+                                    value={formData.alamat} onChange={e => handleInputChange('alamat', e.target.value)} />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                   <div className="space-y-1">

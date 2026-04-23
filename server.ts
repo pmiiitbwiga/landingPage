@@ -12,8 +12,25 @@ async function startServer() {
 
   app.use(express.json({ limit: '10mb' })); // Increased for larger photo uploads
 
+  // Security: CORS Restriction
+  app.use('/api', (req, res, next) => {
+    const origin = req.headers.origin || req.headers.referer || '';
+    const isDev = process.env.NODE_ENV !== 'production';
+    
+    // Izinkan akses API hanya dari domain resmi, localhost, atau preview AI Studio
+    if (!isDev) {
+      if (origin && !origin.includes('pmii-wiga.vercel.app') && !origin.includes('run.app')) {
+        return res.status(403).json({ success: false, message: 'Forbidden API Access' });
+      }
+    }
+    next();
+  });
+
   /**
    * Universal Proxy for Apps Script
+   * 
+   * SECURITY WARNING: Do not accept plain passwords here implicitly.
+   * If integrating real hashing, intercept reqBody.password here.
    */
   const proxyToSheet = async (method: 'GET' | 'POST', reqBody: any, queryParams: any) => {
     const urlRaw = process.env.APPS_SCRIPT_URL?.trim();
@@ -86,6 +103,18 @@ async function startServer() {
   app.post('/api/sheet', async (req, res) => {
     try {
       const data = await proxyToSheet('POST', req.body, null);
+      
+      // Keamanan Lapis 1: Sanitasi Password dari Respon (Jangan pernah kirim kembali password ke Frontend)
+      if (data && typeof data === 'object') {
+         if (data.user && data.user.password) delete data.user.password;
+         if (data.member && data.member.password) delete data.member.password;
+         if (Array.isArray(data.data)) {
+            data.data.forEach((item: any) => { if (item.password) delete item.password; });
+         } else if (data.data?.password) {
+            delete data.data.password;
+         }
+      }
+
       res.json(data);
     } catch (err: any) {
       res.status(err.status || 500).json(err);
@@ -95,6 +124,16 @@ async function startServer() {
   app.get('/api/sheet', async (req, res) => {
     try {
       const data = await proxyToSheet('GET', null, req.query);
+
+      // Sanitasi Password untuk jalur GET (mencegah scraping member yang kebocoran password)
+      if (data && typeof data === 'object') {
+         if (Array.isArray(data)) {
+            data.forEach((item: any) => { if (item.password) delete item.password; });
+         } else if (Array.isArray(data.data)) {
+            data.data.forEach((item: any) => { if (item.password) delete item.password; });
+         }
+      }
+
       res.json(data);
     } catch (err: any) {
       res.status(err.status || 500).json(err);

@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Mail, Lock, Phone, GraduationCap, Building2, ArrowRight, Github, Camera, Upload, MapPin, Calendar as CalendarIcon, UserCircle } from 'lucide-react';
+import { User, Mail, Lock, Phone, GraduationCap, Building2, ArrowRight, Github, Camera, Upload, MapPin, Calendar as CalendarIcon, UserCircle, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import { cn } from '@/src/lib/utils';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { loginWithEmail, registerMember } from '@/src/services/authService';
+import { loginWithEmail, registerMember, loginWithGoogle } from '@/src/services/authService';
 import { useAuth } from '@/src/lib/AuthContext';
+import { useGoogleLogin } from '@react-oauth/google';
+import { toast } from 'sonner';
 
 export function AuthPage() {
   const { user, login } = useAuth();
@@ -35,6 +37,7 @@ export function AuthPage() {
   // Form States
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
   const [name, setName] = React.useState('');
   const [nim, setNim] = React.useState('');
   const [whatsapp, setWhatsapp] = React.useState('');
@@ -42,8 +45,9 @@ export function AuthPage() {
   const [jenisKelamin, setJenisKelamin] = React.useState('');
   const [tempatLahir, setTempatLahir] = React.useState('');
   const [tanggalLahir, setTanggalLahir] = React.useState('');
-  const [Alamat, setAlamat] = React.useState('');
+  const [alamat, setAlamat] = React.useState('');
   const [photo, setPhoto] = React.useState<File | null>(null);
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -128,7 +132,7 @@ export function AuthPage() {
 
         const result = await registerMember({ 
           name, nim, email, whatsapp, komisariat, 
-          jenisKelamin, tempatLahir, tanggalLahir, Alamat,
+          jenisKelamin, tempatLahir, tanggalLahir, alamat,
           password, 
           statusKaderisasi: 'CALON',
           role: 'CALON',
@@ -140,7 +144,7 @@ export function AuthPage() {
           } as any)
         });
         if (result.success) {
-          alert('Pendaftaran berhasil! Silakan login sekarang.');
+          toast.success('Pendaftaran berhasil! Silakan login sekarang.');
           setIsLogin(true);
         } else {
           setError(result.message || 'Gagal mendaftarkan akun. Coba lagi.');
@@ -154,9 +158,59 @@ export function AuthPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    alert("Fitur Login Google memerlukan konfigurasi Client ID di Google Cloud Console. Gunakan Email & Password untuk saat ini.");
-  };
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setIsGoogleLoading(true);
+        setError(null);
+        setErrorDetails(null);
+        
+        // Fetch user basic profile using access token
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        
+        if (!userInfoRes.ok) {
+          throw new Error('Gagal mengambil data dari Google');
+        }
+        
+        const userInfo = await userInfoRes.json();
+        
+        // Send to backend
+        const result = await loginWithGoogle(userInfo.email, userInfo.name, userInfo.picture);
+        
+        if (result.success && result.user) {
+          login(result.user);
+          if (from) {
+            navigate(from, { replace: true });
+          } else {
+            const userRole = (result.user.role || (result.user as any).Role || (result.user as any).ROLE || '').toString().trim().toUpperCase();
+            const isPrivileged = userRole.includes('ADMIN') || userRole.includes('PENGURUS');
+            const path = isPrivileged ? '/admin' : '/member';
+            navigate(path);
+          }
+        } else if (result.requireRegistration) {
+          setIsLogin(false);
+          setEmail(userInfo.email);
+          setName(userInfo.name);
+          // Auto generate a complex password since they use Google, or let them set one
+          // We will let them set one as fallback
+          toast.info("Email Anda belum terdaftar. Silakan lengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
+          setError("Email Anda belum terdaftar. Silakan melengkapi pendaftaran.");
+        } else {
+          setError(result.message || 'Gagal login menggunakan Google.');
+        }
+      } catch (err: any) {
+        setError(err.message || 'Terjadi kesalahan sistem.');
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    },
+    onError: errorResponse => {
+      console.error(errorResponse);
+      setError('Login Google dibatalkan atau gagal.');
+    },
+  });
 
   return (
     <div className="min-h-screen pt-24 pb-12 flex items-center justify-center bg-surface px-4">
@@ -354,7 +408,7 @@ export function AuthPage() {
                       <div className="relative">
                         <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted" />
                         <textarea 
-                          value={Alamat}
+                          value={alamat}
                           onChange={(e) => setAlamat(e.target.value)}
                           placeholder="Alamat lengkap..." 
                           rows={2}
@@ -416,16 +470,23 @@ export function AuthPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-black uppercase tracking-widest text-muted ml-1">Password</label>
-                  <div className="relative">
+                  <div className="relative flex items-center">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                     <input 
-                      type="password" 
+                      type={showPassword ? "text" : "password"} 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••" 
-                      className="w-full bg-surface border border-line rounded-xl pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/10 outline-none" 
+                      className="w-full bg-surface border border-line rounded-xl pl-10 pr-12 py-3 text-sm focus:ring-2 focus:ring-primary/10 outline-none" 
                       required 
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
 
@@ -444,11 +505,12 @@ export function AuthPage() {
 
                 <button 
                   type="button" 
-                  onClick={handleGoogleLogin}
-                  className="w-full flex items-center justify-center gap-3 bg-white border border-line rounded-xl py-3 text-sm font-bold hover:bg-surface transition-colors"
+                  onClick={() => handleGoogleLogin()}
+                  disabled={loading || isGoogleLoading}
+                  className="w-full flex items-center justify-center gap-3 bg-white border border-line rounded-xl py-3 text-sm font-bold hover:bg-surface transition-colors disabled:opacity-50"
                 >
                   <img src="https://www.google.com/favicon.ico" className="h-4 w-4" alt="Google" />
-                  Lanjut dengan Google
+                  {isGoogleLoading ? 'MEMPROSES...' : 'Lanjut dengan Google'}
                 </button>
               </motion.form>
             </AnimatePresence>

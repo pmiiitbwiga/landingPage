@@ -20,3 +20,13 @@ export async function registerMember(data: Partial<Member>): Promise<{ success: 
     return { success: false, message: 'Gagal mendaftarkan akun.' };
   }
 }
+
+export async function loginWithGoogle(email: string, name: string, picture?: string): Promise<{ success: boolean; requireRegistration?: boolean; user?: Member; message?: string; googleData?: any }> {
+  try {
+    const result = await postToSheet<any>('google_login', { email, name, picture });
+    return result;
+  } catch (error) {
+    console.error('Google Login error:', error);
+    return { success: false, message: 'Gagal memproses data Google.' };
+  }
+}
