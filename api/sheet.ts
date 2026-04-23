@@ -57,10 +57,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (contentType && contentType.includes('application/json')) {
       const data = await response.json();
+      // Only throw 400 ERROR if there is a severe backend error, not just validation message.
+      // E.g., user not found requires "success: false" but should return 200 HTTP for UI to display it
       if (data && data.success === false) {
+        if (data.requireRegistration) {
+          // Send 200 so UI can handle the registration flow nicely
+          return res.status(200).json(data);
+        }
         return res.status(400).json({ 
           status: 400, 
-          message: data.message || 'Apps Script menolak permintaan.'
+          message: data.message || 'Apps Script menolak permintaan.',
+          ...data
         });
       }
       return res.status(200).json(data);

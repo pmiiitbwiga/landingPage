@@ -160,6 +160,7 @@ export function AuthPage() {
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
+      let fetchedUserInfo: any = null;
       try {
         setIsGoogleLoading(true);
         setError(null);
@@ -174,10 +175,10 @@ export function AuthPage() {
           throw new Error('Gagal mengambil data dari Google');
         }
         
-        const userInfo = await userInfoRes.json();
+        fetchedUserInfo = await userInfoRes.json();
         
         // Send to backend
-        const result = await loginWithGoogle(userInfo.email, userInfo.name, userInfo.picture);
+        const result = await loginWithGoogle(fetchedUserInfo.email, fetchedUserInfo.name, fetchedUserInfo.picture);
         
         if (result.success && result.user) {
           login(result.user);
@@ -189,19 +190,30 @@ export function AuthPage() {
             const path = isPrivileged ? '/admin' : '/member';
             navigate(path);
           }
-        } else if (result.requireRegistration) {
+        } else if (result.requireRegistration === true || result.requireRegistration === 'true') {
           setIsLogin(false);
-          setEmail(userInfo.email);
-          setName(userInfo.name);
+          setEmail(fetchedUserInfo.email || '');
+          setName(fetchedUserInfo.name || '');
           // Auto generate a complex password since they use Google, or let them set one
           // We will let them set one as fallback
           toast.info("Email Anda belum terdaftar. Silakan lengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
-          setError("Email Anda belum terdaftar. Silakan melengkapi pendaftaran.");
+          setError("Email Anda belum terdaftar. Silakan melengkapi form manual.");
         } else {
           setError(result.message || 'Gagal login menggunakan Google.');
         }
       } catch (err: any) {
-        setError(err.message || 'Terjadi kesalahan sistem.');
+        // If the backend returned a wrapper error but it has requireRegistration, parse it
+        if (err.requireRegistration || err.message?.includes('Email belum terdaftar')) {
+          setIsLogin(false);
+          if (fetchedUserInfo) {
+             setEmail(fetchedUserInfo.email || '');
+             setName(fetchedUserInfo.name || '');
+          }
+          setError("Email Anda belum terdaftar. Silakan melengkapi form manual.");
+          toast.info("Email Anda belum terdaftar. Silakan melengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
+        } else {
+          setError(err.message || 'Terjadi kesalahan sistem.');
+        }
       } finally {
         setIsGoogleLoading(false);
       }

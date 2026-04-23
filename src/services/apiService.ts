@@ -29,8 +29,13 @@ export async function postToSheet<T>(action: string, data: any): Promise<T> {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    if (errorData.requireRegistration) {
+      // If it throws 400 but has requireRegistration, just return the data normally
+      return errorData;
+    }
     const error = new Error(errorData.error || errorData.message || 'Gagal mengirim data ke server.');
     (error as any).details = errorData.hint || errorData.details;
+    Object.assign(error, errorData);
     throw error;
   }
 
