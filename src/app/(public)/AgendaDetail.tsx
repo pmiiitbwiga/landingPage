@@ -4,7 +4,7 @@ import { getAgendaBySlug, registerAgenda, uploadFile } from '@/src/services/agen
 import { Agenda } from '@/src/types';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import { formatDate } from '@/src/lib/utils';
-import { Calendar, MapPin, User, ArrowLeft, Ticket, Clock, Info, CheckCircle, AlertTriangle, Phone, Share2, Copy, FileText } from 'lucide-react';
+import { Calendar, MapPin, User, ArrowLeft, Ticket, Clock, Info, CheckCircle, AlertTriangle, Phone, Share2, Copy, FileText, ExternalLink } from 'lucide-react';
 import { Button } from '@/src/components/ui/Button';
 import { Badge } from '@/src/components/ui/Badge';
 import { useAuth } from '@/src/lib/AuthContext';
@@ -100,7 +100,26 @@ export function AgendaDetail() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      navigate('/login', { state: { from: `/agenda/${slug}` } });
+      toast.custom((t) => (
+        <div className="bg-white border border-line rounded-2xl p-5 shadow-2xl flex flex-col gap-3 w-full sm:-mx-4 sm:w-[350px] animate-in slide-in-from-right-4">
+          <div className="flex gap-4">
+            <div className="bg-primary/10 rounded-xl p-3 h-fit shrink-0">
+              <User className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-black text-primary text-sm uppercase tracking-wider mb-1">Login Diperlukan</h3>
+              <p className="text-muted text-xs leading-relaxed">Silakan masuk dengan akun member Anda untuk mendaftar kegiatan ini.</p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-2">
+            <Button variant="outline" size="sm" className="text-xs h-9 uppercase tracking-widest font-bold" onClick={() => toast.dismiss(t)}>Batal</Button>
+            <Button variant="primary" size="sm" className="text-xs h-9 uppercase tracking-widest font-bold" onClick={() => {
+              toast.dismiss(t);
+              navigate('/login', { state: { from: `/agenda/${slug}` } });
+            }}>Login Sekarang</Button>
+          </div>
+        </div>
+      ), { duration: 10000 });
       return;
     }
 
@@ -241,8 +260,15 @@ ${window.location.href}`;
                                </span>
                            </div>
                            <div className="flex items-center gap-2 text-[14px] font-bold">
-                               <MapPin className="h-5 w-5 text-accent" />
-                               <span>{agenda.location || 'Lokasi segera diumumkan'}</span>
+                               <MapPin className="h-5 w-5 text-accent shrink-0" />
+                               {agenda.linkLokasi ? (
+                                 <a href={agenda.linkLokasi} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline flex items-center gap-1.5 transition-colors">
+                                   <span className="line-clamp-2 leading-snug">{agenda.location || 'Lokasi segera diumumkan'}</span>
+                                   <ExternalLink className="h-3.5 w-3.5 opacity-80 shrink-0" />
+                                 </a>
+                               ) : (
+                                 <span className="line-clamp-2 leading-snug">{agenda.location || 'Lokasi segera diumumkan'}</span>
+                               )}
                            </div>
                        </div>
                    </div>
@@ -610,7 +636,26 @@ ${window.location.href}`;
                         <Button 
                           onClick={() => {
                             if (!user) {
-                              navigate('/login', { state: { from: `/agenda/${slug}?openForm=true` } });
+                              toast.custom((t) => (
+                                <div className="bg-white border border-line rounded-2xl p-5 shadow-2xl flex flex-col gap-3 w-full sm:-mx-4 sm:w-[350px] animate-in slide-in-from-right-4">
+                                  <div className="flex gap-4">
+                                    <div className="bg-primary/10 rounded-xl p-3 h-fit shrink-0">
+                                      <User className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-black text-primary text-sm uppercase tracking-wider mb-1">Login Diperlukan</h3>
+                                      <p className="text-muted text-xs leading-relaxed">Silakan masuk dengan akun member Anda untuk mendaftar kegiatan ini.</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-end gap-2 mt-2">
+                                    <Button variant="outline" size="sm" className="text-xs h-9 uppercase tracking-widest font-bold" onClick={() => toast.dismiss(t)}>Batal</Button>
+                                    <Button variant="primary" size="sm" className="text-xs h-9 uppercase tracking-widest font-bold" onClick={() => {
+                                      toast.dismiss(t);
+                                      navigate('/login', { state: { from: `/agenda/${slug}?openForm=true` } });
+                                    }}>Login Sekarang</Button>
+                                  </div>
+                                </div>
+                              ), { duration: 10000 });
                             } else {
                               setShowRegForm(true);
                               setTimeout(() => {

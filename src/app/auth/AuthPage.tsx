@@ -107,11 +107,14 @@ export function AuthPage() {
     setLoading(true);
     setError(null);
     setErrorDetails(null);
+    const loadingToast = toast.loading(isLogin ? 'Sedang memverifikasi...' : 'Sedang memproses pendaftaran, harap tunggu...');
 
     try {
       if (isLogin) {
         const result = await loginWithEmail(email, password);
         if (result.success && result.user) {
+          toast.dismiss(loadingToast);
+          toast.success(`Selamat datang kembali, ${result.user.name}!`);
           login(result.user); // Using context login
           if (from) {
             navigate(from, { replace: true });
@@ -122,6 +125,8 @@ export function AuthPage() {
             navigate(path);
           }
         } else {
+          toast.dismiss(loadingToast);
+          toast.error('Login gagal');
           setError(result.message || 'Email atau Password salah.');
         }
       } else {
@@ -144,13 +149,18 @@ export function AuthPage() {
           } as any)
         });
         if (result.success) {
+          toast.dismiss(loadingToast);
           toast.success('Pendaftaran berhasil! Silakan login sekarang.');
           setIsLogin(true);
         } else {
+          toast.dismiss(loadingToast);
+          toast.error('Gagal mendaftar');
           setError(result.message || 'Gagal mendaftarkan akun. Coba lagi.');
         }
       }
     } catch (err: any) {
+      toast.dismiss(loadingToast);
+      toast.error('Kesalahan sistem');
       setError(err.message || 'Terjadi kesalahan koneksi.');
       setErrorDetails(err.details || null);
     } finally {
@@ -161,6 +171,7 @@ export function AuthPage() {
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       let fetchedUserInfo: any = null;
+      const googleToastId = toast.loading('Sedang memproses akun Google...');
       try {
         setIsGoogleLoading(true);
         setError(null);
@@ -181,6 +192,8 @@ export function AuthPage() {
         const result = await loginWithGoogle(fetchedUserInfo.email, fetchedUserInfo.name, fetchedUserInfo.picture);
         
         if (result.success && result.user) {
+          toast.dismiss(googleToastId);
+          toast.success(`Berhasil login dengan akun Google!`);
           login(result.user);
           if (from) {
             navigate(from, { replace: true });
@@ -190,15 +203,18 @@ export function AuthPage() {
             const path = isPrivileged ? '/admin' : '/member';
             navigate(path);
           }
-        } else if (result.requireRegistration === true || result.requireRegistration === 'true') {
+        } else if (result.requireRegistration === true || String(result.requireRegistration) === 'true') {
           setIsLogin(false);
           setEmail(fetchedUserInfo.email || '');
           setName(fetchedUserInfo.name || '');
           // Auto generate a complex password since they use Google, or let them set one
           // We will let them set one as fallback
+          toast.dismiss(googleToastId);
           toast.info("Email Anda belum terdaftar. Silakan lengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
           setError("Email Anda belum terdaftar. Silakan melengkapi form manual.");
         } else {
+          toast.dismiss(googleToastId);
+          toast.error(result.message || 'Gagal login menggunakan Google.');
           setError(result.message || 'Gagal login menggunakan Google.');
         }
       } catch (err: any) {
@@ -210,8 +226,11 @@ export function AuthPage() {
              setName(fetchedUserInfo.name || '');
           }
           setError("Email Anda belum terdaftar. Silakan melengkapi form manual.");
+          toast.dismiss(googleToastId);
           toast.info("Email Anda belum terdaftar. Silakan melengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
         } else {
+          toast.dismiss(googleToastId);
+          toast.error('Kesalahan sistem Google');
           setError(err.message || 'Terjadi kesalahan sistem.');
         }
       } finally {
@@ -220,6 +239,7 @@ export function AuthPage() {
     },
     onError: errorResponse => {
       console.error(errorResponse);
+      toast.error('Login Google dibatalkan atau gagal.');
       setError('Login Google dibatalkan atau gagal.');
     },
   });

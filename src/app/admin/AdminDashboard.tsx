@@ -18,7 +18,6 @@ import { createPost, getPosts } from '@/src/services/postService';
 import { postToSheet } from '@/src/services/apiService';
 import { getAgendas, getFormFields, addFormField, createAgenda, updateAgenda, deleteAgenda, getParticipations } from '@/src/services/agendaService';
 import { getMembers, createMember, updateMember, deleteMember } from '@/src/services/memberService';
-
 import { toast } from 'sonner';
 
 export function AdminDashboard() {
@@ -70,6 +69,7 @@ export function AdminDashboard() {
     endDate: '',
     time: '',
     location: '',
+    linkLokasi: '',
     content: '',
     quota: '',
     facilities: '',
@@ -106,8 +106,16 @@ export function AdminDashboard() {
       });
     }
     if (activeTab === 'agendas') {
-      loadAgendas();
-      loadFormFields();
+      setLoading(true);
+      Promise.all([
+        getAgendas(),
+        getFormFields()
+      ]).then(([agendaData, fieldData]) => {
+        setAgendas(agendaData);
+        setFormFields(fieldData);
+      }).finally(() => {
+        setLoading(false);
+      });
     }
     if (activeTab === 'members') {
       loadMembers();
@@ -119,12 +127,15 @@ export function AdminDashboard() {
 
   const loadMyParticipations = async () => {
     if (!user) return;
+    setLoading(true);
     try {
       const data = await getParticipations();
       const myData = data.filter(p => String(p.memberId) === String(user.uid));
       setParticipations(myData);
     } catch (err) {
       console.error('Load Participations error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -255,7 +266,7 @@ export function AdminDashboard() {
         toast.success(editingAgendaId ? 'Agenda berhasil diperbarui!' : 'Agenda berhasil dibuat!');
         setShowAgendaModal(false);
         setEditingAgendaId(null);
-        setAgendaForm({ title: '', date: '', endDate: '', time: '', location: '', content: '', quota: '', facilities: '', requirements: '', logoBase64: '', customFields: [], contactPerson: '' });
+        setAgendaForm({ title: '', date: '', endDate: '', time: '', location: '', linkLokasi: '', content: '', quota: '', facilities: '', requirements: '', logoBase64: '', customFields: [], contactPerson: '' });
         loadAgendas();
       }
     } catch (err) {
@@ -298,6 +309,7 @@ export function AdminDashboard() {
       endDate: agd.endDate ? agd.endDate.substring(0, 10) : '',
       time: agd.time ? agd.time.replace('.', ':') : '',
       location: agd.location,
+      linkLokasi: agd.linkLokasi || '',
       content: agd.content,
       quota: agd.quota?.toString() || '',
       facilities: agd.facilities || '',
@@ -328,7 +340,7 @@ export function AdminDashboard() {
           jenisKelamin: 'Laki-laki',
           tempatLahir: '',
           tanggalLahir: '',
-          Alamat: '',
+          alamat: '',
           whatsapp: '', 
           komisariat: '', 
           statusKaderisasi: 'CALON', 

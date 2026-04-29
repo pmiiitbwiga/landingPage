@@ -13,7 +13,6 @@ import { TiptapEditor } from '@/src/components/editor/TiptapEditor';
 import { createPost } from '@/src/services/postService';
 import { getParticipations } from '@/src/services/agendaService';
 import { updateMember } from '@/src/services/memberService';
-
 import { toast } from 'sonner';
 
 export function MemberDashboard() {
@@ -43,12 +42,15 @@ export function MemberDashboard() {
   }, [user]);
 
   const loadMyData = async () => {
+    setLoading(true);
     try {
       const data = await getParticipations();
       const myData = data.filter(p => String(p.memberId) === String(user?.uid));
       setParticipations(myData);
     } catch (err) {
       console.error('Load Participations error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 

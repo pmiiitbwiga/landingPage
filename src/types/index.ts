@@ -60,6 +60,7 @@ export interface Agenda {
   endDate: string;
   time: string;
   location: string;
+  linkLokasi?: string;
   content: string;
   quota: number;
   logoUrl: string;
