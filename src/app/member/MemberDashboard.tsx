@@ -15,6 +15,7 @@ import { getParticipations } from '@/src/services/agendaService';
 import { updateMember } from '@/src/services/memberService';
 import { toast } from 'sonner';
 import { compressImage } from '@/src/lib/imageUtils';
+import { formatDateForInput } from '@/src/lib/dateUtils';
 
 export function MemberDashboard() {
   const { user, logout, login } = useAuth();
@@ -33,7 +34,11 @@ export function MemberDashboard() {
   const [profileForm, setProfileForm] = React.useState({
     name: user?.name || '',
     whatsapp: user?.whatsapp || '',
-    komisariat: user?.komisariat || ''
+    komisariat: user?.komisariat || '',
+    jenisKelamin: (user as any)?.jenisKelamin || 'Laki-laki',
+    tempatLahir: (user as any)?.tempatLahir || '',
+    tanggalLahir: formatDateForInput((user as any)?.tanggalLahir),
+    alamat: (user as any)?.alamat || '',
   });
 
   React.useEffect(() => {
@@ -82,7 +87,9 @@ export function MemberDashboard() {
       });
 
       if (result.success) {
-        toast.success('BERHASIL! Konten Sahabat telah diajukan.');
+        toast.success('Gagasan Berhasil Diajukan', { 
+          description: 'Konten Anda sekarang dalam proses moderasi admin.' 
+        });
         setPostTitle('');
         setPostContent('');
         setPostImage(null);
@@ -91,6 +98,7 @@ export function MemberDashboard() {
         throw new Error(result.message || 'Gagal mengirim konten.');
       }
     } catch (err: any) {
+      toast.error('Gagal Mengirim', { description: err.message || 'Gagal mengajukan konten' });
       setPostError(err.message || 'Terjadi kesalahan.');
     } finally {
       setLoading(false);
@@ -103,12 +111,14 @@ export function MemberDashboard() {
       const res = await updateMember(user.uid, profileForm);
       if (res.success) {
         login({ ...user, ...profileForm });
-        toast.success('Profil Sahabat Berhasil Diperbarui!');
+        toast.success('Profil Diperbarui', { 
+          description: 'Informasi data diri Anda berhasil disimpan.' 
+        });
       } else {
-        toast.error('Gagal: ' + res.message);
+        toast.error('Gagal Menyimpan', { description: res.message || 'Harap periksa kembali isian formulir.' });
       }
-    } catch (err) {
-      toast.error('Terjadi kesalahan.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: err.message || 'Terjadi gangguan jaringan atau server.' });
     } finally {
       setLoading(false);
     }
@@ -268,6 +278,15 @@ export function MemberDashboard() {
                         <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">NIM / Identitas</label>
                         <div className="w-full bg-gray-50 border border-line rounded-xl px-5 py-3.5 text-[14px] font-bold text-muted cursor-not-allowed italic">{user.nim}</div>
                      </div>
+                     <div className="space-y-2 col-span-1 md:col-span-2">
+                        <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">Alamat Lengkap</label>
+                        <textarea 
+                          rows={2}
+                          value={profileForm.alamat}
+                          onChange={e => setProfileForm({...profileForm, alamat: e.target.value})}
+                          className="w-full bg-surface border border-line rounded-xl px-5 py-3.5 text-[14px] font-bold text-ink focus:ring-2 focus:ring-primary/10 outline-none transition-all resize-none" 
+                        />
+                     </div>
                      <div className="space-y-2">
                         <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">No. WhatsApp</label>
                         <input 
@@ -285,6 +304,35 @@ export function MemberDashboard() {
                           onChange={e => setProfileForm({...profileForm, komisariat: e.target.value})}
                           className="w-full bg-surface border border-line rounded-xl px-5 py-3.5 text-[14px] font-bold text-ink focus:ring-2 focus:ring-primary/10 outline-none transition-all" 
                         />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">Tempat Lahir</label>
+                        <input 
+                          type="text" 
+                          value={profileForm.tempatLahir}
+                          onChange={e => setProfileForm({...profileForm, tempatLahir: e.target.value})}
+                          className="w-full bg-surface border border-line rounded-xl px-5 py-3.5 text-[14px] font-bold text-ink focus:ring-2 focus:ring-primary/10 outline-none transition-all" 
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">Tanggal Lahir</label>
+                        <input 
+                          type="date" 
+                          value={profileForm.tanggalLahir}
+                          onChange={e => setProfileForm({...profileForm, tanggalLahir: e.target.value})}
+                          className="w-full bg-surface border border-line rounded-xl px-5 py-3.5 text-[14px] font-bold text-ink focus:ring-2 focus:ring-primary/10 outline-none transition-all" 
+                        />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">Jenis Kelamin</label>
+                        <select 
+                          value={profileForm.jenisKelamin}
+                          onChange={e => setProfileForm({...profileForm, jenisKelamin: e.target.value})}
+                          className="w-full bg-surface border border-line rounded-xl px-5 py-3.5 text-[14px] font-bold text-ink focus:ring-2 focus:ring-primary/10 outline-none transition-all appearance-none" 
+                        >
+                          <option value="Laki-laki">Laki-laki</option>
+                          <option value="Perempuan">Perempuan</option>
+                        </select>
                      </div>
                      <div className="space-y-2">
                         <label className="text-[10px] font-black text-muted uppercase tracking-[0.1em]">Email Google</label>

@@ -25,7 +25,21 @@ export default function App() {
     <AuthProvider>
       <SearchProvider>
         <BrowserRouter>
-          <Toaster position="top-center" richColors theme="light" />
+          <Toaster 
+            position="top-center" 
+            toastOptions={{
+              classNames: {
+                toast: 'bg-white border-2 border-line rounded-2xl shadow-2xl p-4 gap-4 flex items-start w-full sm:-mx-4 sm:w-[350px] animate-in slide-in-from-top-4',
+                title: 'text-[13px] font-black uppercase tracking-tight text-primary',
+                description: 'text-[11px] font-bold text-muted mt-1 leading-relaxed',
+                icon: 'mt-0.5 shrink-0',
+                success: 'border-green-100 bg-white [&_[data-title]]:text-green-600',
+                error: 'border-red-100 bg-white [&_[data-title]]:text-red-500',
+                info: 'border-blue-100 bg-white [&_[data-title]]:text-blue-500',
+                loading: 'border-primary/10 bg-white',
+              }
+            }}
+          />
           <MainLayout>
           <Routes>
             <Route path="/" element={<LandingPage />} />

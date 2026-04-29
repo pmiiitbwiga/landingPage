@@ -70,14 +70,22 @@ export function AuthPage() {
     setLoading(true);
     setError(null);
     setErrorDetails(null);
-    const loadingToast = toast.loading(isLogin ? 'Sedang memverifikasi...' : 'Sedang memproses pendaftaran, harap tunggu...');
+    const loadingToast = toast.loading(
+      isLogin ? 'Memverifikasi Akses...' : 'Memproses Pendaftaran...', 
+      { 
+        description: isLogin ? 'Mencocokkan email dan kata sandi.' : 'Mengamankan data dan mengunggah foto profil Anda.',
+        duration: Infinity
+      }
+    );
 
     try {
       if (isLogin) {
         const result = await loginWithEmail(email, password);
         if (result.success && result.user) {
           toast.dismiss(loadingToast);
-          toast.success(`Selamat datang kembali, ${result.user.name}!`);
+          toast.success(`Selamat Bergabung, ${result.user.name}!`, { 
+            description: 'Anda telah berhasil masuk ke dalam sistem.' 
+          });
           login(result.user); // Using context login
           if (from) {
             navigate(from, { replace: true });
@@ -89,7 +97,7 @@ export function AuthPage() {
           }
         } else {
           toast.dismiss(loadingToast);
-          toast.error('Login gagal');
+          toast.error('Gagal Masuk', { description: result.message || 'Email atau Password salah.' });
           setError(result.message || 'Email atau Password salah.');
         }
       } else {
@@ -113,17 +121,21 @@ export function AuthPage() {
         });
         if (result.success) {
           toast.dismiss(loadingToast);
-          toast.success('Pendaftaran berhasil! Silakan login sekarang.');
+          toast.success('Pendaftaran Berhasil!', { 
+            description: 'Akun Anda sudah aktif. Silakan masuk sekarang.' 
+          });
           setIsLogin(true);
         } else {
           toast.dismiss(loadingToast);
-          toast.error('Gagal mendaftar');
+          toast.error('Pendaftaran Gagal', { 
+            description: result.message || 'Periksa kembali data Anda.' 
+          });
           setError(result.message || 'Gagal mendaftarkan akun. Coba lagi.');
         }
       }
     } catch (err: any) {
       toast.dismiss(loadingToast);
-      toast.error('Kesalahan sistem');
+      toast.error('Kesalahan Sistem', { description: err.message || 'Terjadi gangguan jaringan atau server.' });
       setError(err.message || 'Terjadi kesalahan koneksi.');
       setErrorDetails(err.details || null);
     } finally {
@@ -134,7 +146,10 @@ export function AuthPage() {
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       let fetchedUserInfo: any = null;
-      const googleToastId = toast.loading('Sedang memproses akun Google...');
+      const googleToastId = toast.loading('Memproses Akun Google...', {
+        description: 'Menyambungkan dengan otentikasi Google.',
+        duration: Infinity
+      });
       try {
         setIsGoogleLoading(true);
         setError(null);
@@ -156,7 +171,7 @@ export function AuthPage() {
         
         if (result.success && result.user) {
           toast.dismiss(googleToastId);
-          toast.success(`Berhasil login dengan akun Google!`);
+          toast.success(`Berhasil Masuk!`, { description: `Selamat datang kembali, ${result.user.name}.` });
           login(result.user);
           if (from) {
             navigate(from, { replace: true });
@@ -173,11 +188,14 @@ export function AuthPage() {
           // Auto generate a complex password since they use Google, or let them set one
           // We will let them set one as fallback
           toast.dismiss(googleToastId);
-          toast.info("Email Anda belum terdaftar. Silakan lengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
+          toast.info("Registrasi Diperlukan", { 
+            description: "Email Anda belum terdaftar. Silakan lengkapi formulir pendaftaran.", 
+            duration: 6000 
+          });
           setError("Email Anda belum terdaftar. Silakan melengkapi form manual.");
         } else {
           toast.dismiss(googleToastId);
-          toast.error(result.message || 'Gagal login menggunakan Google.');
+          toast.error("Gagal Masuk", { description: result.message || 'Gagal login menggunakan Google.' });
           setError(result.message || 'Gagal login menggunakan Google.');
         }
       } catch (err: any) {
@@ -190,10 +208,13 @@ export function AuthPage() {
           }
           setError("Email Anda belum terdaftar. Silakan melengkapi form manual.");
           toast.dismiss(googleToastId);
-          toast.info("Email Anda belum terdaftar. Silakan melengkapi data profil berikut untuk menyelesaikan pendaftaran.", { duration: 6000 });
+          toast.info("Registrasi Diperlukan", { 
+            description: "Email Anda belum terdaftar. Silakan melengkapi data profil berikut.", 
+            duration: 6000 
+          });
         } else {
           toast.dismiss(googleToastId);
-          toast.error('Kesalahan sistem Google');
+          toast.error('Kesalahan Sistem', { description: err.message || 'Terjadi kesalahan sistem Google.' });
           setError(err.message || 'Terjadi kesalahan sistem.');
         }
       } finally {
@@ -202,7 +223,7 @@ export function AuthPage() {
     },
     onError: errorResponse => {
       console.error(errorResponse);
-      toast.error('Login Google dibatalkan atau gagal.');
+      toast.error('Dibatalkan', { description: 'Login Google dibatalkan atau gagal.' });
       setError('Login Google dibatalkan atau gagal.');
     },
   });

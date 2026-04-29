@@ -20,6 +20,7 @@ import { getAgendas, getFormFields, addFormField, createAgenda, updateAgenda, de
 import { getMembers, createMember, updateMember, deleteMember } from '@/src/services/memberService';
 import { toast } from 'sonner';
 import { compressImage } from '@/src/lib/imageUtils';
+import { formatDateForInput } from '@/src/lib/dateUtils';
 
 export function AdminDashboard() {
   const { user, logout, login } = useAuth();
@@ -175,7 +176,7 @@ export function AdminDashboard() {
       });
 
       if (result.success) {
-        toast.success('BERHASIL! Konten Sahabat telah diajukan dan sedang menunggu moderasi Admin.');
+        toast.success('Gagasan Berhasil Diajukan', { description: 'Konten sedang menunggu moderasi Admin.' });
         setPostTitle('');
         setPostContent('');
         setPostImage(null);
@@ -184,6 +185,7 @@ export function AdminDashboard() {
         throw new Error(result.message || 'Gagal mengirim konten.');
       }
     } catch (err: any) {
+      toast.error('Gagal Mengirim', { description: err.message || 'Terjadi kesalahan.' });
       setPostError(err.message || 'Terjadi kesalahan saat mengirim konten.');
     } finally {
       setLoading(false);
@@ -198,12 +200,12 @@ export function AdminDashboard() {
       if (res.success) {
         const updatedUser = { ...user, ...profileForm };
         login(updatedUser);
-        toast.success('Profil Berhasil Diperbarui!');
+        toast.success('Profil Diperbarui', { description: 'Informasi akun Anda berhasil disimpan.' });
       } else {
-        toast.error('Gagal memperbarui profil: ' + res.message);
+        toast.error('Gagal Menyimpan', { description: res.message || 'Harap periksa isian kembali.' });
       }
-    } catch (err) {
-      toast.error('Terjadi kesalahan saat memperbarui profil.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: err.message || 'Terjadi gangguan jaringan atau server.' });
     } finally {
       setLoading(false);
     }
@@ -250,14 +252,16 @@ export function AdminDashboard() {
         : await createAgenda(payload);
 
       if (res.success) {
-        toast.success(editingAgendaId ? 'Agenda berhasil diperbarui!' : 'Agenda berhasil dibuat!');
+        toast.success(editingAgendaId ? 'Agenda Diperbarui' : 'Agenda Berhasil Dibuat', { description: 'Perubahan agenda telah disimpan ke dalam sistem.' });
         setShowAgendaModal(false);
         setEditingAgendaId(null);
         setAgendaForm({ title: '', date: '', endDate: '', time: '', location: '', linkLokasi: '', content: '', quota: '', facilities: '', requirements: '', logoBase64: '', customFields: [], contactPerson: '' });
         loadAgendas();
+      } else {
+        toast.error('Gagal Menyimpan', { description: res.message || 'Periksa kembali isian form.' });
       }
-    } catch (err) {
-      toast.error('Gagal menyimpan agenda.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: err.message || 'Gagal menyimpan agenda.' });
     } finally {
       setLoading(false);
     }
@@ -270,12 +274,12 @@ export function AdminDashboard() {
       const res = await deleteAgenda(id);
       if (res.success) {
         loadAgendas();
-        toast.success('Agenda berhasil dihapus!');
+        toast.success('Agenda Dihapus', { description: 'Agenda berhasil dihapus dari sistem.' });
       } else {
-        toast.error(res.message || 'Gagal menghapus agenda.');
+        toast.error('Gagal Menghapus', { description: res.message || 'Gagal menghapus agenda.' });
       }
-    } catch (err) {
-      toast.error('Gagal menghapus agenda.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: err.message || 'Gagal menghapus agenda.' });
     } finally {
       setLoading(false);
     }
@@ -317,7 +321,7 @@ export function AdminDashboard() {
         : await createMember(memberForm);
 
       if (res.success) {
-        toast.success(editingMemberUid ? 'Data kader diperbarui!' : 'Kader baru berhasil ditambah!');
+        toast.success(editingMemberUid ? 'Data Diperbarui' : 'Kader Ditambahkan', { description: 'Data kader berhasil disimpan.' });
         setShowMemberModal(false);
         setEditingMemberUid(null);
         setMemberForm({ 
@@ -336,10 +340,10 @@ export function AdminDashboard() {
         });
         loadMembers();
       } else {
-        toast.error(res.message || 'Gagal menyimpan data kader.');
+        toast.error('Gagal Menyimpan', { description: res.message || 'Gagal menyimpan data kader.' });
       }
-    } catch (err) {
-      toast.error('Terjadi kesalahan.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: err.message || 'Terjadi kesalahan jaringan atau server.' });
     } finally {
       setLoading(false);
     }
@@ -352,10 +356,12 @@ export function AdminDashboard() {
       const res = await deleteMember(uid);
       if (res.success) {
         loadMembers();
-        toast.success('Kader berhasil dihapus!');
+        toast.success('Kader Dihapus', { description: 'Data kader telah dihilangkan permanen.' });
+      } else {
+        toast.error('Gagal Menghapus', { description: res.message || 'Tindakan tidak dapat diproses.' });
       }
-    } catch (err) {
-      toast.error('Gagal menghapus kader.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: err.message || 'Gagal menghapus kader due to connection.' });
     } finally {
       setLoading(false);
     }
@@ -369,7 +375,7 @@ export function AdminDashboard() {
       email: m.email,
       jenisKelamin: m.jenisKelamin || 'Laki-laki',
       tempatLahir: m.tempatLahir || '',
-      tanggalLahir: m.tanggalLahir ? m.tanggalLahir.substring(0, 10) : '',
+      tanggalLahir: formatDateForInput(m.tanggalLahir),
       alamat: m.alamat || '',
       whatsapp: m.whatsapp,
       komisariat: m.komisariat,
@@ -415,7 +421,7 @@ export function AdminDashboard() {
           'Email': m.email,
           'Jenis Kelamin': m.jenisKelamin,
           'Tempat Lahir': m.tempatLahir,
-          'Tanggal Lahir': m.tanggalLahir ? m.tanggalLahir.substring(0, 10) : '',
+          'Tanggal Lahir': formatDateForInput(m.tanggalLahir),
           'Alamat': m.alamat,
           'WhatsApp': m.whatsapp,
           'Komisariat': m.komisariat,
@@ -436,7 +442,7 @@ export function AdminDashboard() {
             'Email': member?.email || '',
             'Jenis Kelamin': member?.jenisKelamin || '',
             'Tempat Lahir': member?.tempatLahir || '',
-            'Tanggal Lahir': member?.tanggalLahir || '',
+            'Tanggal Lahir': formatDateForInput(member?.tanggalLahir),
             'Alamat': member?.alamat || '',
             'WhatsApp': member?.whatsapp || '',
             'Komisariat': member?.komisariat || '',
@@ -501,9 +507,9 @@ export function AdminDashboard() {
       const buffer = await workbook.xlsx.writeBuffer();
       const finalFileName = filename.replace('.csv', '.xlsx');
       saveAs(new Blob([buffer]), finalFileName);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Export Error:", err);
-      toast.error("Gagal mengekspor data ke Excel.");
+      toast.error('Gagal Ekspor Excel', { description: err.message || 'Terjadi kesalahan saat memproses data.' });
     } finally {
       setLoading(false);
     }
@@ -515,8 +521,8 @@ export function AdminDashboard() {
       try {
         const compressed = await compressImage(file);
         setAgendaForm(prev => ({ ...prev, logoBase64: compressed }));
-      } catch (err) {
-        toast.error('Gagal memproses gambar logo');
+      } catch (err: any) {
+        toast.error('Upload Gagal', { description: err.message || 'Gagal memproses gambar logo.' });
       }
     }
   };
@@ -530,9 +536,10 @@ export function AdminDashboard() {
         await loadFormFields();
         setShowFieldModal(false);
         setNewField({ label: '', type: 'text', options: '', isRequired: true });
+        toast.success('Field Ditambahkan', { description: 'Field formulir baru berhasil dibuat.' });
       }
-    } catch (err) {
-      toast.error('Gagal menambah field.');
+    } catch (err: any) {
+      toast.error('Gagal Menambah Field', { description: err.message || 'Terjadi kesalahan sistem.' });
     } finally {
       setLoading(false);
     }
@@ -557,7 +564,7 @@ export function AdminDashboard() {
     const agenda = agendas.find(a => a.id === agendaId);
     const filtered = participations.filter(p => p.agendaId === agendaId);
     if (filtered.length === 0) {
-      toast.info('Belum ada pendaftar untuk agenda ini.');
+      toast.info('Data Kosong', { description: 'Belum ada pendaftar untuk agenda ini.' });
       return;
     }
     
@@ -570,9 +577,9 @@ export function AdminDashboard() {
       setLoading(true);
       await postToSheet('update_post', { id, status: 'Published' });
       setPendingPosts(prev => prev.filter(p => p.id !== id));
-      toast.success('Konten berhasil diterbitkan!');
-    } catch (err) {
-      toast.error('Gagal menyetujui konten.');
+      toast.success('Konten Diterbitkan', { description: 'Konten berhasil dipublikasikan untuk umum.' });
+    } catch (err: any) {
+      toast.error('Gagal Menerbitkan', { description: err.message || 'Terjadi kesalahan saat menyimpan status.' });
     } finally {
       setLoading(false);
     }
@@ -584,9 +591,9 @@ export function AdminDashboard() {
       setLoading(true);
       await postToSheet('update_post', { id, status: 'Rejected' });
       setPendingPosts(prev => prev.filter(p => p.id !== id));
-      toast.success('Konten ditolak.');
-    } catch (err) {
-      toast.error('Gagal menolak konten.');
+      toast.success('Konten Ditolak', { description: 'Konten telah ditolak dan tidak akan ditampilkan.' });
+    } catch (err: any) {
+      toast.error('Gagal Menolak', { description: err.message || 'Terjadi kesalahan saat menyimpan status.' });
     } finally {
       setLoading(false);
     }

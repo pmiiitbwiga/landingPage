@@ -9,6 +9,7 @@ import { Button } from '@/src/components/ui/Button';
 import { Badge } from '@/src/components/ui/Badge';
 import { useAuth } from '@/src/lib/AuthContext';
 import { SEO } from '@/src/components/SEO';
+import { formatDateForInput } from '@/src/lib/dateUtils';
 
 import { toast } from 'sonner';
 
@@ -25,7 +26,7 @@ export function AgendaDetail() {
     email: user?.email || '',
     jenisKelamin: (user as any)?.jenisKelamin || '',
     tempatLahir: (user as any)?.tempatLahir || '',
-    tanggalLahir: (user as any)?.tanggalLahir || '',
+    tanggalLahir: formatDateForInput((user as any)?.tanggalLahir),
     alamat: (user as any)?.alamat || (user as any)?.Alamat || '',
     whatsapp: user?.whatsapp || '',
     komisariat: user?.komisariat || ''
@@ -41,7 +42,7 @@ export function AgendaDetail() {
         email: prev.email || user.email,
         jenisKelamin: prev.jenisKelamin || (user as any).jenisKelamin,
         tempatLahir: prev.tempatLahir || (user as any).tempatLahir,
-        tanggalLahir: prev.tanggalLahir || (user as any).tanggalLahir,
+        tanggalLahir: prev.tanggalLahir || formatDateForInput((user as any).tanggalLahir),
         alamat: prev.alamat || (user as any).alamat || (user as any).Alamat,
         whatsapp: prev.whatsapp || user.whatsapp,
         komisariat: prev.komisariat || user.komisariat
@@ -151,12 +152,12 @@ export function AgendaDetail() {
 
       if (result.success) {
         setSuccess(true);
-        toast.success("Berhasil Mendaftar Agenda!");
+        toast.success("Pendaftaran Berhasil!", { description: "Data Anda telah tercatat sebagai peserta agenda ini." });
       } else {
-        toast.error(result.message || 'Terjadi kesalahan saat mendaftar.');
+        toast.error("Pendaftaran Gagal", { description: result.message || 'Terjadi kesalahan saat mendaftar.' });
       }
-    } catch (err) {
-      toast.error('Gagal mengirim pendaftaran. Periksa koneksi internet Sahabat.');
+    } catch (err: any) {
+      toast.error('Kesalahan Sistem', { description: 'Gagal mengirim pendaftaran. Periksa koneksi internet Sahabat.' });
     } finally {
       setSubmitting(false);
     }
@@ -196,7 +197,7 @@ ${window.location.href}`;
       }).catch(console.error);
     } else {
       navigator.clipboard.writeText(`${shareText}`);
-      toast.success('Teks dan tautan berhasil disalin ke papan klip!');
+      toast.success('Tautan Tersalin', { description: 'Teks dan tautan berhasil disalin ke papan klip!' });
     }
   };
 
