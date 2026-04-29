@@ -19,6 +19,7 @@ import { postToSheet } from '@/src/services/apiService';
 import { getAgendas, getFormFields, addFormField, createAgenda, updateAgenda, deleteAgenda, getParticipations } from '@/src/services/agendaService';
 import { getMembers, createMember, updateMember, deleteMember } from '@/src/services/memberService';
 import { toast } from 'sonner';
+import { compressImage } from '@/src/lib/imageUtils';
 
 export function AdminDashboard() {
   const { user, logout, login } = useAuth();
@@ -139,23 +140,9 @@ export function AdminDashboard() {
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmitMyPost = async () => {
     if (!postTitle || !postContent) {
       setPostError('Judul dan Isi konten wajib diisi.');
-      return;
-    }
-
-    if (postImage && postImage.size > 1.5 * 1024 * 1024) {
-      setPostError('Ukuran gambar terlalu besar (Maksimal 1.5MB).');
       return;
     }
 
@@ -165,7 +152,7 @@ export function AdminDashboard() {
     try {
       let imageBase64 = '';
       if (postImage) {
-        imageBase64 = await fileToBase64(postImage);
+        imageBase64 = await compressImage(postImage);
       }
 
       const plainText = postContent
@@ -522,12 +509,15 @@ export function AdminDashboard() {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setAgendaForm(prev => ({ ...prev, logoBase64: reader.result as string }));
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImage(file);
+        setAgendaForm(prev => ({ ...prev, logoBase64: compressed }));
+      } catch (err) {
+        toast.error('Gagal memproses gambar logo');
+      }
     }
   };
 
@@ -1246,9 +1236,10 @@ export function AdminDashboard() {
                       {postImage ? (
                         <div className="relative">
                           <img 
-                            src={URL.createObjectURL(postImage)} 
+                            src={postImage ? URL.createObjectURL(postImage) : ''} 
                             className="h-56 w-auto rounded-3xl shadow-2xl border-4 border-white" 
                             alt="Preview" 
+                            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
                           />
                           <button 
                             type="button"

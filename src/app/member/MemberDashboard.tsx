@@ -14,6 +14,7 @@ import { createPost } from '@/src/services/postService';
 import { getParticipations } from '@/src/services/agendaService';
 import { updateMember } from '@/src/services/memberService';
 import { toast } from 'sonner';
+import { compressImage } from '@/src/lib/imageUtils';
 
 export function MemberDashboard() {
   const { user, logout, login } = useAuth();
@@ -56,15 +57,6 @@ export function MemberDashboard() {
 
   if (!user) return null;
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmitPost = async () => {
     if (!postTitle || !postContent) {
       setPostError('Judul dan Isi konten wajib diisi.');
@@ -74,7 +66,7 @@ export function MemberDashboard() {
     setPostError(null);
     try {
       let imageBase64 = '';
-      if (postImage) imageBase64 = await fileToBase64(postImage);
+      if (postImage) imageBase64 = await compressImage(postImage);
       
       const plainText = postContent.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
       const excerpt = plainText.length > 150 ? plainText.substring(0, 150).trim() + '...' : plainText;
@@ -386,9 +378,10 @@ export function MemberDashboard() {
                       {postImage ? (
                         <div className="relative">
                           <img 
-                            src={URL.createObjectURL(postImage)} 
+                            src={postImage ? URL.createObjectURL(postImage) : ''} 
                             className="h-56 w-auto rounded-3xl shadow-2xl border-4 border-white" 
                             alt="Preview" 
+                            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
                           />
                           <button 
                             onClick={(e) => { e.stopPropagation(); setPostImage(null); }}

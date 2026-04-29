@@ -8,6 +8,7 @@ import { loginWithEmail, registerMember, loginWithGoogle } from '@/src/services/
 import { useAuth } from '@/src/lib/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import { toast } from 'sonner';
+import { compressImage } from '@/src/lib/imageUtils';
 
 export function AuthPage() {
   const { user, login } = useAuth();
@@ -47,60 +48,22 @@ export function AuthPage() {
   const [tanggalLahir, setTanggalLahir] = React.useState('');
   const [alamat, setAlamat] = React.useState('');
   const [photo, setPhoto] = React.useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.size > 1024 * 1024) {
-        setError('Ukuran foto maksimal 1MB');
-        setErrorDetails(null);
-        return;
-      }
       setPhoto(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setError(null);
     }
   };
 
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target?.result as string;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-
-          // Max dimensions
-          const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          
-          // Compress to JPEG with 0.7 quality
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(dataUrl);
-        };
-      };
-    });
-  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -334,8 +297,8 @@ export function AuthPage() {
                     <div className="flex flex-col items-center mb-6">
                       <div className="relative group">
                         <div className="h-20 w-20 rounded-full border-2 border-dashed border-line bg-surface flex items-center justify-center overflow-hidden group-hover:border-primary transition-colors cursor-pointer" onClick={() => document.getElementById('photo-upload')?.click()}>
-                          {photo ? (
-                            <img src={URL.createObjectURL(photo)} alt="Preview" className="h-full w-full object-cover" />
+                          {photoPreview ? (
+                            <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
                           ) : (
                             <Camera className="h-8 w-8 text-muted group-hover:text-primary transition-colors" />
                           )}
